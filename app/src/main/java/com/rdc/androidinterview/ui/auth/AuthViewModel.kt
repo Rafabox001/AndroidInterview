@@ -6,5 +6,5 @@ import com.rdc.androidinterview.repository.auth.AuthRepository
 class AuthViewModel constructor(
     val authRepository: AuthRepository
 ): ViewModel(){
-    
+
 }
