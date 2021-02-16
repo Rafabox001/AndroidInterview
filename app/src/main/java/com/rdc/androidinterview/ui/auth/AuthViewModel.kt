@@ -1,6 +1,7 @@
 package com.rdc.androidinterview.ui.auth
 
 import androidx.lifecycle.LiveData
+import com.rdc.androidinterview.api.auth.network_requests.LoginRequest
 import com.rdc.androidinterview.models.AuthToken
 import com.rdc.androidinterview.repository.auth.AuthRepository
 import com.rdc.androidinterview.ui.BaseViewModel
@@ -15,6 +16,24 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     val authRepository: AuthRepository
 ): BaseViewModel<AuthStateEvent, AuthViewState>(){
+
+    override fun handleStateEvent(stateEvent: AuthStateEvent): LiveData<DataState<AuthViewState>> {
+        return when(stateEvent){
+            is LoginAttemptEvent -> {
+                return authRepository.attemptLogin(
+                    stateEvent.username,
+                    stateEvent.password
+                )
+            }
+            is CheckPreviousAuthEvent -> {
+                AbsentLiveData.create()
+            }
+        }
+    }
+
+    override fun initNewViewState(): AuthViewState {
+        return AuthViewState()
+    }
 
     fun setLoginFields(loginFields: LoginFields){
         val update = getCurrentViewStateOrNew()
@@ -34,19 +53,14 @@ class AuthViewModel @Inject constructor(
         _viewState.value = update
     }
 
-    override fun handleStateEvent(stateEvent: AuthStateEvent): LiveData<DataState<AuthViewState>> {
-        return when(stateEvent){
-            is LoginAttemptEvent -> {
-                AbsentLiveData.create()
-            }
-            is CheckPreviousAuthEvent -> {
-                AbsentLiveData.create()
-            }
-        }
+    fun cancelActiveJobs(){
+        authRepository.cancelActiveJobs()
     }
 
-    override fun initNewViewState(): AuthViewState {
-        return AuthViewState()
+
+    override fun onCleared() {
+        super.onCleared()
+        cancelActiveJobs()
     }
 
 }

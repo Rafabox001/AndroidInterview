@@ -4,4 +4,8 @@
     <string name="login">Login</string>
     <string name="username">User Name</string>
     <string name="password">Password</string>
+
+    <!-- Testing purpose strings -->
+    <string name="predefined_username">android-challenge@parrotsoftware.io</string>
+    <string name="predefined_password">8mngDhoPcB3ckV7X</string>
 </resources>

@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import com.rdc.androidinterview.R
 import com.rdc.androidinterview.models.AuthToken
+import com.rdc.androidinterview.ui.auth.state.AuthStateEvent
 import com.rdc.androidinterview.ui.auth.state.LoginFields
 import kotlinx.android.synthetic.main.fragment_login.*
 
@@ -28,22 +29,26 @@ class LoginFragment : BaseAuthFragment() {
         subscribeObservers()
 
         login_button.setOnClickListener {
-            viewModel.setAuthToken(
-                AuthToken(
-                    1,
-                    "gdfngidfng4nt43n43jn34jn"
-                )
-            )
+            login()
         }
     }
 
-    fun subscribeObservers(){
+    private fun subscribeObservers(){
         viewModel.viewState.observe(viewLifecycleOwner, Observer{
             it.loginFields?.let{
                 it.login_username?.let{input_username.setText(it)}
                 it.login_password?.let{input_password.setText(it)}
             }
         })
+    }
+
+    private fun login(){
+        viewModel.setStateEvent(
+            AuthStateEvent.LoginAttemptEvent(
+                input_username.text.toString(),
+                input_password.text.toString()
+            )
+        )
     }
 
     override fun onDestroyView() {
