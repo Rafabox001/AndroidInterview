@@ -42,7 +42,7 @@
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/input_email"
+                android:id="@+id/input_username"
                 android:textColor="#000"
                 android:hint="@string/username"
                 android:inputType="textEmailAddress"

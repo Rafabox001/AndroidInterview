@@ -5,10 +5,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
 import com.rdc.androidinterview.R
-import com.rdc.androidinterview.util.ApiEmptyResponse
-import com.rdc.androidinterview.util.ApiErrorResponse
-import com.rdc.androidinterview.util.ApiSuccessResponse
+import com.rdc.androidinterview.models.AuthToken
+import com.rdc.androidinterview.ui.auth.state.LoginFields
+import kotlinx.android.synthetic.main.fragment_login.*
 
 class LoginFragment : BaseAuthFragment() {
 
@@ -24,20 +25,35 @@ class LoginFragment : BaseAuthFragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "LoginFragment: ${viewModel.hashCode()}")
 
-        viewModel.testLogin().observe(viewLifecycleOwner, { response ->
+        subscribeObservers()
 
-            when(response){
-                is ApiSuccessResponse ->{
-                    Log.d(TAG, "LOGIN RESPONSE: ${response.body}")
-                }
-                is ApiErrorResponse ->{
-                    Log.d(TAG, "LOGIN RESPONSE: ${response.errorMessage}")
-                }
-                is ApiEmptyResponse ->{
-                    Log.d(TAG, "LOGIN RESPONSE: Empty Response")
-                }
+        login_button.setOnClickListener {
+            viewModel.setAuthToken(
+                AuthToken(
+                    1,
+                    "gdfngidfng4nt43n43jn34jn"
+                )
+            )
+        }
+    }
+
+    fun subscribeObservers(){
+        viewModel.viewState.observe(viewLifecycleOwner, Observer{
+            it.loginFields?.let{
+                it.login_username?.let{input_username.setText(it)}
+                it.login_password?.let{input_password.setText(it)}
             }
         })
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel.setLoginFields(
+            LoginFields(
+                input_username.text.toString(),
+                input_password.text.toString()
+            )
+        )
     }
 
 }

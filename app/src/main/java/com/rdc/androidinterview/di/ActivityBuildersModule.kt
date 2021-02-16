@@ -5,6 +5,7 @@ import com.rdc.androidinterview.di.auth.AuthModule
 import com.rdc.androidinterview.di.auth.AuthScope
 import com.rdc.androidinterview.di.auth.AuthViewModelModule
 import com.rdc.androidinterview.ui.auth.AuthActivity
+import com.rdc.androidinterview.ui.menu.MenuActivity
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 
@@ -17,4 +18,6 @@ abstract class ActivityBuildersModule {
     )
     abstract fun contributeAuthActivity(): AuthActivity
 
+    @ContributesAndroidInjector
+    abstract fun contributeMenuActivity(): MenuActivity
 }
