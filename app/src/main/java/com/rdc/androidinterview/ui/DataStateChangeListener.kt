@@ -1,0 +1,6 @@
+package com.rdc.androidinterview.ui
+
+interface DataStateChangeListener{
+
+    fun onDataStateChange(dataState: DataState<*>?)
+}

@@ -1,6 +1,8 @@
 package com.rdc.androidinterview.di
 
 import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.room.Room
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
@@ -14,6 +16,7 @@ import com.rdc.androidinterview.persistence.ParrotChallengeDatabase
 import com.rdc.androidinterview.persistence.ParrotChallengeDatabase.Companion.DATABASE_NAME
 import com.rdc.androidinterview.util.Constants
 import com.rdc.androidinterview.util.LiveDataCallAdapterFactory
+import com.rdc.androidinterview.util.PreferenceKeys
 import dagger.Module
 import dagger.Provides
 import okhttp3.OkHttpClient
@@ -24,6 +27,18 @@ import javax.inject.Singleton
 
 @Module
 class AppModule{
+
+    @Singleton
+    @Provides
+    fun provideSharedPreferences(application: Application): SharedPreferences {
+        return application.getSharedPreferences(PreferenceKeys.APP_PREFERENCES, Context.MODE_PRIVATE)
+    }
+
+    @Singleton
+    @Provides
+    fun provideSharedPrefsEditor(sharedPreferences: SharedPreferences): SharedPreferences.Editor {
+        return sharedPreferences.edit()
+    }
 
     @Singleton
     @Provides

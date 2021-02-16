@@ -3,7 +3,7 @@ package com.rdc.androidinterview.ui.auth
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.lifecycle.Observer
+import android.view.View
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
@@ -11,8 +11,10 @@ import androidx.navigation.findNavController
 import com.rdc.androidinterview.R
 import com.rdc.androidinterview.ui.BaseActivity
 import com.rdc.androidinterview.ui.ResponseType
+import com.rdc.androidinterview.ui.auth.state.AuthStateEvent
 import com.rdc.androidinterview.ui.menu.MenuActivity
 import com.rdc.androidinterview.viewmodels.ViewModelProviderFactory
+import kotlinx.android.synthetic.main.activity_auth.*
 import javax.inject.Inject
 
 class AuthActivity : BaseActivity(),
@@ -39,11 +41,13 @@ class AuthActivity : BaseActivity(),
         findNavController(R.id.auth_nav_host_fragment).addOnDestinationChangedListener(this)
 
         subscribeObservers()
+        checkPreviousAuthUser()
     }
 
     private fun subscribeObservers() {
 
-        viewModel.dataState.observe(this, Observer { dataState ->
+        viewModel.dataState.observe(this, { dataState ->
+            onDataStateChange(dataState)
             dataState.data?.let { data ->
                 data.data?.let { event ->
                     event.getContentIfNotHandled()?.let {
@@ -53,35 +57,17 @@ class AuthActivity : BaseActivity(),
                         }
                     }
                 }
-                data.response?.let {event ->
-                    event.getContentIfNotHandled()?.let{
-                        when(it.responseType){
-                            is ResponseType.Dialog ->{
-                                // show dialog
-                            }
-
-                            is ResponseType.Toast ->{
-                                // show toast
-                            }
-
-                            is ResponseType.None ->{
-                                // print to log
-                                Log.e(TAG, "AuthActivity: Response: ${it.message}, ${it.responseType}" )
-                            }
-                        }
-                    }
-                }
             }
         })
 
-        viewModel.viewState.observe(this, Observer {
+        viewModel.viewState.observe(this, {
             Log.d(TAG, "AuthActivity, subscribeObservers: AuthViewState: ${it}")
             it.authToken?.let {
                 sessionManager.login(it)
             }
         })
 
-        sessionManager.cachedToken.observe(this, Observer { dataState ->
+        sessionManager.cachedToken.observe(this, { dataState ->
             Log.d(TAG, "AuthActivity, subscribeObservers: AuthDataState: ${dataState}")
             dataState.let { authToken ->
                 if (authToken != null && authToken.account_pk != -1 && authToken.access_token != null) {
@@ -96,5 +82,22 @@ class AuthActivity : BaseActivity(),
         val intent = Intent(this, MenuActivity::class.java)
         startActivity(intent)
         finish()
+    }
+
+    private fun checkPreviousAuthUser(){
+        viewModel.setStateEvent(AuthStateEvent.CheckPreviousAuthEvent())
+    }
+
+    private fun onFinishCheckPreviousAuthUser(){
+        fragment_container.visibility = View.VISIBLE
+    }
+
+    override fun displayProgressBar(bool: Boolean){
+        if(bool){
+            progress_bar.visibility = View.VISIBLE
+        }
+        else{
+            progress_bar.visibility = View.GONE
+        }
     }
 }

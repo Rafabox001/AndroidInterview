@@ -15,4 +15,7 @@ interface AuthTokenDao {
     @Query("UPDATE auth_token SET access_token = null AND refresh_token = null WHERE account_pk = :pk")
     fun nullifyToken(pk: Int): Int
 
+    @Query("SELECT * FROM auth_token WHERE account_pk = :pk")
+    suspend fun searchByPk(pk: Int): AuthToken?
+
 }

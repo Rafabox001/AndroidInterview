@@ -10,7 +10,7 @@ import com.rdc.androidinterview.models.AccountProperties
 interface AccountPropertiesDao {
 
     @Query("SELECT * FROM account_properties WHERE username = :username")
-    suspend fun searchByEmail(username: String): AccountProperties?
+    suspend fun searchByUserName(username: String): AccountProperties?
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertOrIgnore(accountProperties: AccountProperties): Long

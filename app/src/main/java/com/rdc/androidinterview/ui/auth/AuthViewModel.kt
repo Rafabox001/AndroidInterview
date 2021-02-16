@@ -26,7 +26,7 @@ class AuthViewModel @Inject constructor(
                 )
             }
             is CheckPreviousAuthEvent -> {
-                AbsentLiveData.create()
+                return authRepository.checkPreviousAuthUser()
             }
         }
     }

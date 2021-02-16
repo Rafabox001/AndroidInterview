@@ -1,5 +1,6 @@
 package com.rdc.androidinterview.di.auth
 
+import android.content.SharedPreferences
 import com.rdc.androidinterview.api.auth.ParrotChallengeApiAuthService
 import com.rdc.androidinterview.persistence.AccountPropertiesDao
 import com.rdc.androidinterview.persistence.AuthTokenDao
@@ -26,13 +27,17 @@ class AuthModule{
         sessionManager: SessionManager,
         authTokenDao: AuthTokenDao,
         accountPropertiesDao: AccountPropertiesDao,
-        parrotChallengeApiAuthService: ParrotChallengeApiAuthService
+        parrotChallengeApiAuthService: ParrotChallengeApiAuthService,
+        sharedPreferences: SharedPreferences,
+        editor: SharedPreferences.Editor
         ): AuthRepository {
         return AuthRepository(
             authTokenDao,
             accountPropertiesDao,
             parrotChallengeApiAuthService,
-            sessionManager
+            sessionManager,
+            sharedPreferences,
+            editor
         )
     }
 

@@ -9,6 +9,7 @@ import com.rdc.androidinterview.ui.BaseActivity
 import com.rdc.androidinterview.ui.auth.AuthActivity
 
 class MenuActivity : BaseActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_menu)
@@ -30,5 +31,9 @@ class MenuActivity : BaseActivity() {
         val intent = Intent(this, AuthActivity::class.java)
         startActivity(intent)
         finish()
+    }
+
+    override fun displayProgressBar(bool: Boolean) {
+
     }
 }
