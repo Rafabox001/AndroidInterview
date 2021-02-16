@@ -1,10 +1,10 @@
 package com.rdc.androidinterview.ui.auth
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.rdc.androidinterview.R
+import com.rdc.androidinterview.ui.BaseActivity
 
-class AuthActivity : AppCompatActivity() {
+class AuthActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_auth)

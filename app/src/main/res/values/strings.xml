@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Android Interview</string>
+
+    <string name="login">Login</string>
+    <string name="username">User Name</string>
+    <string name="password">Password</string>
 </resources>
