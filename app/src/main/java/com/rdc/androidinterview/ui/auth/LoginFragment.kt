@@ -6,6 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.rdc.androidinterview.R
+import com.rdc.androidinterview.util.ApiEmptyResponse
+import com.rdc.androidinterview.util.ApiErrorResponse
+import com.rdc.androidinterview.util.ApiSuccessResponse
 
 class LoginFragment : BaseAuthFragment() {
 
@@ -20,6 +23,21 @@ class LoginFragment : BaseAuthFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "LoginFragment: ${viewModel.hashCode()}")
+
+        viewModel.testLogin().observe(viewLifecycleOwner, { response ->
+
+            when(response){
+                is ApiSuccessResponse ->{
+                    Log.d(TAG, "LOGIN RESPONSE: ${response.body}")
+                }
+                is ApiErrorResponse ->{
+                    Log.d(TAG, "LOGIN RESPONSE: ${response.errorMessage}")
+                }
+                is ApiEmptyResponse ->{
+                    Log.d(TAG, "LOGIN RESPONSE: Empty Response")
+                }
+            }
+        })
     }
 
 }

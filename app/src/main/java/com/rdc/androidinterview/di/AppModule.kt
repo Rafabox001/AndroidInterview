@@ -5,17 +5,48 @@ import androidx.room.Room
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.request.RequestOptions
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.rdc.androidinterview.R
 import com.rdc.androidinterview.persistence.AccountPropertiesDao
 import com.rdc.androidinterview.persistence.AuthTokenDao
 import com.rdc.androidinterview.persistence.ParrotChallengeDatabase
 import com.rdc.androidinterview.persistence.ParrotChallengeDatabase.Companion.DATABASE_NAME
+import com.rdc.androidinterview.util.Constants
+import com.rdc.androidinterview.util.LiveDataCallAdapterFactory
 import dagger.Module
 import dagger.Provides
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @Module
 class AppModule{
+
+    @Singleton
+    @Provides
+    fun provideGsonBuilder(): Gson {
+        return GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
+    }
+
+    @Singleton
+    @Provides
+    fun provideRetrofitBuilder(gsonBuilder: Gson): Retrofit.Builder{
+        val interceptor : HttpLoggingInterceptor = HttpLoggingInterceptor().apply {
+            this.level = HttpLoggingInterceptor.Level.BODY
+        }
+        val client : OkHttpClient = OkHttpClient.Builder().apply {
+            this.addInterceptor(interceptor)
+        }.build()
+
+        return Retrofit.Builder()
+            .baseUrl(Constants.BASE_URL)
+            .addCallAdapterFactory(LiveDataCallAdapterFactory())
+            .addConverterFactory(GsonConverterFactory.create(gsonBuilder))
+            .client(client)
+    }
 
     @Singleton
     @Provides

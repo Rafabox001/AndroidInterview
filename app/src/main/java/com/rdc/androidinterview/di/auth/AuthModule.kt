@@ -12,12 +12,10 @@ import retrofit2.Retrofit
 @Module
 class AuthModule{
 
-    // TEMPORARY
     @AuthScope
     @Provides
-    fun provideFakeApiService(): ParrotChallengeApiAuthService{
-        return Retrofit.Builder()
-            .baseUrl("http://api-staging.parrot.rest")
+    fun provideFakeApiService(retrofitBuilder: Retrofit.Builder): ParrotChallengeApiAuthService{
+        return retrofitBuilder
             .build()
             .create(ParrotChallengeApiAuthService::class.java)
     }
