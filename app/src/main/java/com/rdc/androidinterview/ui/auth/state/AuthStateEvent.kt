@@ -8,4 +8,6 @@ sealed class AuthStateEvent{
     ): AuthStateEvent()
 
     class CheckPreviousAuthEvent(): AuthStateEvent()
+
+    class None(): AuthStateEvent()
 }

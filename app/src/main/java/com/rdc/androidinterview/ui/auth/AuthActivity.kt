@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
+import com.google.android.material.appbar.AppBarLayout
 import com.rdc.androidinterview.R
 import com.rdc.androidinterview.ui.BaseActivity
 import com.rdc.androidinterview.ui.ResponseType
@@ -41,6 +42,10 @@ class AuthActivity : BaseActivity(),
         findNavController(R.id.auth_nav_host_fragment).addOnDestinationChangedListener(this)
 
         subscribeObservers()
+    }
+
+    override fun onResume() {
+        super.onResume()
         checkPreviousAuthUser()
     }
 
@@ -99,5 +104,9 @@ class AuthActivity : BaseActivity(),
         else{
             progress_bar.visibility = View.GONE
         }
+    }
+
+    override fun expandAppBar() {
+        //ignore
     }
 }

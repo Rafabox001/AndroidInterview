@@ -2,12 +2,24 @@
     <string name="app_name">Android Interview</string>
 
     <string name="login">Login</string>
+    <string name="logout">Exit App</string>
     <string name="username">User Name</string>
     <string name="password">Password</string>
     <string name="text_error">Error</string>
     <string name="text_success">Success</string>
     <string name="text_ok">OK</string>
     <string name="text_cancel">Cancel</string>
+
+    <string name="menu">Menu</string>
+    <string name="account">Account</string>
+    <string name="store">Store Name</string>
+    <string name="availability">Availability State</string>
+
+    <string name="account_info">Account Info</string>
+    <string name="menu_section">Menu Section</string>
+
+    <string name="logged_user">Logged User</string>
+    <string name="my_store">My Store Name</string>
 
     <!-- Testing purpose strings -->
     <string name="predefined_username">android-challenge@parrotsoftware.io</string>

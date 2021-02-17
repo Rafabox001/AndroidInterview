@@ -28,6 +28,14 @@ class AuthViewModel @Inject constructor(
             is CheckPreviousAuthEvent -> {
                 return authRepository.checkPreviousAuthUser()
             }
+            is None -> {
+                return object: LiveData<DataState<AuthViewState>>(){
+                    override fun onActive() {
+                        super.onActive()
+                        value = DataState.data(null, null)
+                    }
+                }
+            }
         }
     }
 
@@ -53,10 +61,14 @@ class AuthViewModel @Inject constructor(
         _viewState.value = update
     }
 
-    fun cancelActiveJobs(){
-        authRepository.cancelActiveJobs()
+    private fun handlePendingData(){
+        setStateEvent(None())
     }
 
+    fun cancelActiveJobs(){
+        handlePendingData()
+        authRepository.cancelActiveJobs()
+    }
 
     override fun onCleared() {
         super.onCleared()

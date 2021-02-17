@@ -10,6 +10,7 @@ import com.rdc.androidinterview.models.AccountProperties
 import com.rdc.androidinterview.models.AuthToken
 import com.rdc.androidinterview.persistence.AccountPropertiesDao
 import com.rdc.androidinterview.persistence.AuthTokenDao
+import com.rdc.androidinterview.repository.JobManager
 import com.rdc.androidinterview.repository.NetworkBoundResource
 import com.rdc.androidinterview.session.SessionManager
 import com.rdc.androidinterview.ui.DataState
@@ -33,11 +34,9 @@ class AuthRepository @Inject constructor(
     val sessionManager: SessionManager,
     val sharedPreferences: SharedPreferences,
     val sharedPrefsEditor: SharedPreferences.Editor
-) {
+): JobManager("AuthRepository") {
 
     private val TAG: String = "AppDebug"
-
-    private var repositoryJob: Job? = null
 
     fun attemptLogin(username: String, password: String): LiveData<DataState<AuthViewState>>{
 
@@ -46,9 +45,11 @@ class AuthRepository @Inject constructor(
             return returnErrorResponse(loginFieldErrors, ResponseType.Dialog())
         }
 
-        return object: NetworkBoundResource<LoginResponse, AuthViewState>(
+        return object: NetworkBoundResource<LoginResponse, Any, AuthViewState>(
             sessionManager.isConnectedToTheInternet(),
-            true
+            true,
+            true,
+            false
         ){
             override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<LoginResponse>) {
                 Log.d(TAG, "handleApiSuccessResponse: ${response}")
@@ -102,13 +103,21 @@ class AuthRepository @Inject constructor(
             }
 
             override fun setJob(job: Job) {
-                repositoryJob?.cancel()
-                repositoryJob = job
+                addJob("attemptLogin", job)
             }
 
             //Not used in this case
             override suspend fun createCacheRequestAndReturn() {
 
+            }
+
+            //Not used in this case
+            override fun loadFromCache(): LiveData<AuthViewState> {
+                return AbsentLiveData.create()
+            }
+
+            //Not used in this case
+            override suspend fun updateLocalDb(cacheObject: Any?) {
             }
 
         }.asLiveData()
@@ -123,8 +132,10 @@ class AuthRepository @Inject constructor(
             return returnNoTokenFound()
         }
         else{
-            return object: NetworkBoundResource<Void, AuthViewState>(
+            return object: NetworkBoundResource<Void, Any, AuthViewState>(
                 sessionManager.isConnectedToTheInternet(),
+                false,
+                false,
                 false
             ){
 
@@ -170,9 +181,17 @@ class AuthRepository @Inject constructor(
                     return AbsentLiveData.create()
                 }
 
+                //Not used in this case
+                override fun loadFromCache(): LiveData<AuthViewState> {
+                    return AbsentLiveData.create()
+                }
+
+                //Not used in this case
+                override suspend fun updateLocalDb(cacheObject: Any?) {
+                }
+
                 override fun setJob(job: Job) {
-                    repositoryJob?.cancel()
-                    repositoryJob = job
+                    addJob("checkPreviousAuthUser", job)
                 }
 
 
@@ -208,11 +227,6 @@ class AuthRepository @Inject constructor(
                 )
             }
         }
-    }
-
-    fun cancelActiveJobs(){
-        Log.d(TAG, "AuthRepository: Cancelling on-going jobs...")
-        repositoryJob?.cancel()
     }
 
 }
