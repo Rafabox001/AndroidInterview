@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "2cc95d6fca83f66aae2b6ae8a2accad0",
+    "identityHash": "acf7925a4f8288621bf811eb410c26be",
     "entities": [
       {
         "tableName": "auth_token",
@@ -50,7 +50,7 @@
       },
       {
         "tableName": "account_properties",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER NOT NULL, `username` TEXT NOT NULL, `password` TEXT NOT NULL, PRIMARY KEY(`pk`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER NOT NULL, `username` TEXT NOT NULL, `password` TEXT NOT NULL, `uuid` TEXT, `email` TEXT, `stores` TEXT, PRIMARY KEY(`pk`))",
         "fields": [
           {
             "fieldPath": "pk",
@@ -69,6 +69,24 @@
             "columnName": "password",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "uuid",
+            "columnName": "uuid",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "email",
+            "columnName": "email",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "stores",
+            "columnName": "stores",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -84,7 +102,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2cc95d6fca83f66aae2b6ae8a2accad0')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'acf7925a4f8288621bf811eb410c26be')"
     ]
   }
 }
