@@ -2,14 +2,17 @@ package com.rdc.androidinterview.di.menu
 
 import com.rdc.androidinterview.api.menu.ParrotChallengeApiMenuService
 import com.rdc.androidinterview.persistence.AccountPropertiesDao
+import com.rdc.androidinterview.persistence.MenuItemDao
+import com.rdc.androidinterview.persistence.ParrotChallengeDatabase
 import com.rdc.androidinterview.repository.menu.account.AccountRepository
+import com.rdc.androidinterview.repository.menu.menu.MenuRepository
 import com.rdc.androidinterview.session.SessionManager
 import dagger.Module
 import dagger.Provides
 import retrofit2.Retrofit
 
 @Module
-class MenuModule{
+class MenuModule {
 
     @MenuScope
     @Provides
@@ -26,7 +29,33 @@ class MenuModule{
         accountPropertiesDao: AccountPropertiesDao,
         sessionManager: SessionManager
     ): AccountRepository {
-        return AccountRepository(parrotChallengeApiMenuService, accountPropertiesDao, sessionManager)
+        return AccountRepository(
+            parrotChallengeApiMenuService,
+            accountPropertiesDao,
+            sessionManager
+        )
+    }
+
+    @MenuScope
+    @Provides
+    fun provideMenuRepository(
+        parrotChallengeApiMenuService: ParrotChallengeApiMenuService,
+        menuItemDao: MenuItemDao,
+        accountPropertiesDao: AccountPropertiesDao,
+        sessionManager: SessionManager
+    ): MenuRepository {
+        return MenuRepository(
+            parrotChallengeApiMenuService,
+            menuItemDao,
+            accountPropertiesDao,
+            sessionManager
+        )
+    }
+
+    @MenuScope
+    @Provides
+    fun provideMenuItemDao(db: ParrotChallengeDatabase): MenuItemDao {
+        return db.getMenuItemDao()
     }
 
 }
