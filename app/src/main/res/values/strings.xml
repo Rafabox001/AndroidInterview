@@ -21,6 +21,11 @@
     <string name="logged_user">Logged User</string>
     <string name="my_store">My Store Name</string>
 
+    <string name="product_available">Available</string>
+    <string name="product_unavailable">Unavailable</string>
+    <string name="product_price">Price: $%s</string>
+    <string name="category">Category</string>
+
     <!-- Testing purpose strings -->
     <string name="predefined_username">android-challenge@parrotsoftware.io</string>
     <string name="predefined_password">8mngDhoPcB3ckV7X</string>
