@@ -37,6 +37,15 @@ class MenuViewModel @Inject constructor(
                     menuRepository.getAccountProperties(authToken)
                 } ?: AbsentLiveData.create()
             }
+            is UpdateMenuItemsEvent -> {
+                return sessionManager.cachedToken.value?.let { authToken ->
+                    menuRepository.updateMenuItem(
+                        authToken,
+                        stateEvent.productId,
+                        stateEvent.availability
+                    )
+                } ?: AbsentLiveData.create()
+            }
         }
     }
 
@@ -50,9 +59,15 @@ class MenuViewModel @Inject constructor(
         _viewState.value = update
     }
 
-    fun setAccountPropertiesData(accountProperties: AccountProperties){
+    fun setUpdatedMenuItemData(menuItem: MenuItem) {
         val update = getCurrentViewStateOrNew()
-        if(update.accountProperties == accountProperties){
+        update.updatedMenuItem = menuItem
+        _viewState.value = update
+    }
+
+    fun setAccountPropertiesData(accountProperties: AccountProperties) {
+        val update = getCurrentViewStateOrNew()
+        if (update.accountProperties == accountProperties) {
             return
         }
         update.accountProperties = accountProperties

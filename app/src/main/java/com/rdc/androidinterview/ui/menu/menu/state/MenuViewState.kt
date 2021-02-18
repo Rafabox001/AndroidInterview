@@ -5,5 +5,6 @@ import com.rdc.androidinterview.models.MenuItem
 
 class MenuViewState(
     var accountProperties: AccountProperties? = null,
-    var menuList: List<MenuItem> = listOf()
+    var menuList: List<MenuItem> = listOf(),
+    var updatedMenuItem: MenuItem? = null
 )

@@ -6,6 +6,8 @@ sealed class MenuStateEvent{
 
     class SearchMenuItemsEvent(val storeId: String): MenuStateEvent()
 
+    class UpdateMenuItemsEvent(val productId: String, val availability: String): MenuStateEvent()
+
     class None: MenuStateEvent()
 
 }

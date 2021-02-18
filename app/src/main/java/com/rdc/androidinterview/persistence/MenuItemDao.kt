@@ -16,4 +16,7 @@ interface MenuItemDao {
     @Query("SELECT * FROM menu_item_info")
     fun getAllMenuItems(): LiveData<List<MenuItem>>
 
+    @Query("UPDATE menu_item_info SET availability = :availability WHERE uuid = :uuid")
+    suspend fun updateMenuItem(uuid: String, availability: String)
+
 }

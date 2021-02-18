@@ -18,14 +18,14 @@ import kotlinx.android.synthetic.main.fragment_menu.*
 import javax.inject.Inject
 
 class MenuFragment : BaseMenuFragment(),
-    CategoryListAdapter.Interaction
-{
+    CategoryListAdapter.Interaction {
 
     @Inject
     lateinit var requestManager: RequestManager
 
     private lateinit var recyclerAdapter: CategoryListAdapter
-    private var currentCategoryList : MutableList<CategorySection> = mutableListOf()
+    private var currentCategoryList: MutableList<CategorySection> = mutableListOf()
+    private var updatingPosition: Int = -1
 
     @Inject
     lateinit var sessionManager: SessionManager
@@ -46,19 +46,22 @@ class MenuFragment : BaseMenuFragment(),
         subscribeObservers()
     }
 
-    private fun subscribeObservers(){
+    private fun subscribeObservers() {
         viewModel.dataState.observe(viewLifecycleOwner, { dataState ->
             stateChangeListener.onDataStateChange(dataState)
-            if(dataState != null){
+            if (dataState != null) {
                 dataState.data?.let { data ->
-                    data.data?.let{ event ->
-                        event.getContentIfNotHandled()?.let{ viewState ->
-                            viewState.accountProperties?.let{ accountProperties ->
+                    data.data?.let { event ->
+                        event.getContentIfNotHandled()?.let { viewState ->
+                            viewState.accountProperties?.let { accountProperties ->
                                 Log.d(TAG, "MenuFragment, DataState: $accountProperties")
                                 viewModel.setAccountPropertiesData(accountProperties)
                             }
-                            if (viewState.menuList.isNotEmpty()){
+                            if (viewState.menuList.isNotEmpty()) {
                                 viewModel.setMenuListData(viewState.menuList)
+                            }
+                            viewState.updatedMenuItem?.let { menuItem ->
+                                viewModel.setUpdatedMenuItemData(menuItem)
                             }
                         }
                     }
@@ -66,14 +69,14 @@ class MenuFragment : BaseMenuFragment(),
             }
         })
 
-        viewModel.viewState.observe(viewLifecycleOwner, { viewState->
-            if(viewState != null){
-                viewState.accountProperties?.let{
-                    Log.d(TAG, "MenuFragment, ViewState: ${it}")
+        viewModel.viewState.observe(viewLifecycleOwner, { viewState ->
+            if (viewState != null) {
+                viewState.accountProperties?.let {
+                    Log.d(TAG, "MenuFragment, ViewState: $it")
                     it.stores?.let { store ->
-                        if (store.isEmpty().not()){
+                        if (store.isEmpty().not()) {
                             val storeId = store[0].uuid
-                            if (storeId.isEmpty().not().and(initialLoad)){
+                            if (storeId.isEmpty().not().and(initialLoad)) {
                                 viewModel.setStateEvent(MenuStateEvent.SearchMenuItemsEvent(storeId!!))
                                 initialLoad = false
                             }
@@ -83,7 +86,7 @@ class MenuFragment : BaseMenuFragment(),
                 }
                 viewState.menuList.let { menuList ->
                     val groupedList = menuList.groupBy { it.category }
-                    val categoryList : MutableList<CategorySection> = mutableListOf()
+                    val categoryList: MutableList<CategorySection> = mutableListOf()
                     groupedList.forEach { mapEntry ->
                         val categorySection = CategorySection(
                             uuid = mapEntry.key.uuid,
@@ -92,9 +95,17 @@ class MenuFragment : BaseMenuFragment(),
                         )
                         categoryList.add(categorySection)
                     }
-                    Log.d(TAG, "MenuFragment, ViewState: ${menuList}")
+                    Log.d(TAG, "MenuFragment, ViewState: $menuList")
                     recyclerAdapter.submitList(categoryList)
                     currentCategoryList = categoryList
+                }
+                viewState.updatedMenuItem?.let { updatedItem ->
+                    currentCategoryList.forEachIndexed { index, categorySection ->
+                        if (categorySection.uuid.contentEquals(updatedItem.category.uuid)){
+                            categorySection.menuItems[updatingPosition].availability = updatedItem.availability
+                            recyclerAdapter.notifyItemChanged(index, categorySection)
+                        }
+                    }
                 }
             }
         })
@@ -105,19 +116,22 @@ class MenuFragment : BaseMenuFragment(),
         viewModel.setStateEvent(MenuStateEvent.GetAccountPropertiesEvent())
     }
 
-    private fun initRecyclerView(){
+    private fun initRecyclerView() {
 
         menu_recyclerview.apply {
 
             recyclerAdapter = CategoryListAdapter(this@MenuFragment, requestManager)
-            addOnScrollListener(object: RecyclerView.OnScrollListener(){
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     super.onScrollStateChanged(recyclerView, newState)
                     val layoutManager = recyclerView.layoutManager as LinearLayoutManager
                     val lastPosition = layoutManager.findLastVisibleItemPosition()
                     if (lastPosition == recyclerAdapter.itemCount.minus(1)) {
-                        Log.d(TAG, "Menu Fragment: end of scroll, if pagination should be implemented this is the place...")
+                        Log.d(
+                            TAG,
+                            "Menu Fragment: end of scroll, if pagination should be implemented this is the place..."
+                        )
                     }
                 }
             })
@@ -128,7 +142,7 @@ class MenuFragment : BaseMenuFragment(),
 
     override fun onItemSelected(position: Int, item: CategorySection, visibility: Boolean) {
         Log.d(TAG, "onItemSelected: position, CategorySection: $position, $item")
-        when (visibility){
+        when (visibility) {
             true -> item.itemsVisible = false
             false -> item.itemsVisible = true
         }
@@ -136,12 +150,35 @@ class MenuFragment : BaseMenuFragment(),
     }
 
     override fun onMenuItemIntent(position: Int, item: MenuItem) {
-
+        updatingPosition = position
+        when (item.availability) {
+            AVAILABLE_STATUS -> {
+                viewModel.setStateEvent(
+                    MenuStateEvent.UpdateMenuItemsEvent(
+                        item.uuid,
+                        UNAVAILABLE_STATUS
+                    )
+                )
+            }
+            UNAVAILABLE_STATUS -> {
+                viewModel.setStateEvent(
+                    MenuStateEvent.UpdateMenuItemsEvent(
+                        item.uuid,
+                        AVAILABLE_STATUS
+                    )
+                )
+            }
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         // clear references (can leak memory)
         menu_recyclerview.adapter = null
+    }
+
+    companion object {
+        private const val AVAILABLE_STATUS = "AVAILABLE"
+        private const val UNAVAILABLE_STATUS = "UNAVAILABLE"
     }
 }

@@ -18,22 +18,6 @@ class MenuItemListAdapter(
     private val requestManager: RequestManager
     ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val TAG: String = "AppDebug"
-    private val CATEGORY_VIEW = "Category"
-    private val MENU_ITEM = 0
-    private val NO_MORE_RESULTS_BLOG_MARKER = MenuItem(
-        CATEGORY_VIEW,
-        "" ,
-        "",
-        "",
-        "",
-        "",
-        0,
-        false,
-        "",
-        Category("", "", 0)
-    )
-
     val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MenuItem>() {
 
         override fun areItemsTheSame(oldItem: MenuItem, newItem: MenuItem): Boolean {
@@ -108,14 +92,6 @@ class MenuItemListAdapter(
     ) : RecyclerView.ViewHolder(itemView) {
 
         fun bind(item: MenuItem) = with(itemView) {
-            itemView.setOnClickListener {
-                interaction?.onItemSelected(adapterPosition, item)
-            }
-
-            itemView.setOnClickListener {
-                interaction?.onItemSelected(adapterPosition, item)
-            }
-
             requestManager
                 .load(item.imageUrl)
                 .transition(DrawableTransitionOptions.withCrossFade())
@@ -126,6 +102,12 @@ class MenuItemListAdapter(
             when (item.availability){
                 ITEM_AVAILABLE -> itemView.availability_switch.isChecked = true
                 ITEM_UNAVAILABLE -> itemView.availability_switch.isChecked = false
+            }
+
+            itemView.availability_switch.setOnCheckedChangeListener { buttonView, _ ->
+                if (buttonView.isPressed){
+                    interaction?.onItemSelected(adapterPosition, item)
+                }
             }
         }
     }

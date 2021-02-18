@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.switchMap
 import com.rdc.androidinterview.api.menu.ParrotChallengeApiMenuService
+import com.rdc.androidinterview.api.menu.network_requests.MenuUpdateRequest
 import com.rdc.androidinterview.api.menu.network_responses.MenuListResponse
+import com.rdc.androidinterview.api.menu.network_responses.MenuUpdateResponse
 import com.rdc.androidinterview.api.menu.network_responses.MyStoreResponse
 import com.rdc.androidinterview.models.AccountProperties
 import com.rdc.androidinterview.models.AuthToken
@@ -15,7 +17,9 @@ import com.rdc.androidinterview.repository.JobManager
 import com.rdc.androidinterview.repository.NetworkBoundResource
 import com.rdc.androidinterview.session.SessionManager
 import com.rdc.androidinterview.ui.DataState
+import com.rdc.androidinterview.ui.auth.state.AuthViewState
 import com.rdc.androidinterview.ui.menu.menu.state.MenuViewState
+import com.rdc.androidinterview.util.AbsentLiveData
 import com.rdc.androidinterview.util.ApiSuccessResponse
 import com.rdc.androidinterview.util.GenericApiResponse
 import kotlinx.coroutines.Dispatchers
@@ -185,6 +189,67 @@ class MenuRepository @Inject constructor(
                 }
                 else{
                     Log.d(TAG, "updateLocalDb: menu items list is null")
+                }
+            }
+
+            override fun setJob(job: Job) {
+                addJob("searchMenuItems", job)
+            }
+
+        }.asLiveData()
+    }
+
+    fun updateMenuItem(
+        authToken: AuthToken,
+        productId: String,
+        availability: String
+    ): LiveData<DataState<MenuViewState>> {
+        return object: NetworkBoundResource<MenuUpdateResponse, MenuItem, MenuViewState>(
+            sessionManager.isConnectedToTheInternet(),
+            true,
+            false,
+            false
+        ) {
+
+            override suspend fun createCacheRequestAndReturn() {
+                withContext(Dispatchers.Main){
+                    // finishing by viewing db cache
+                    result.addSource(loadFromCache()){ viewState ->
+                        onCompleteJob(DataState.data(viewState, null))
+                    }
+                }
+            }
+
+            override suspend fun handleApiSuccessResponse(
+                response: ApiSuccessResponse<MenuUpdateResponse>
+            ) {
+                updateLocalDb(response.body.result)
+
+                onCompleteJob(
+                    DataState.data(
+                        data = MenuViewState(
+                            updatedMenuItem = response.body.result
+                        )
+                    )
+                )
+            }
+
+            override fun createCall(): LiveData<GenericApiResponse<MenuUpdateResponse>> {
+                return parrotChallengeApiMenuService.updateMenuItem(
+                    "Bearer ${authToken.access_token!!}",
+                    product_id = productId,
+                    MenuUpdateRequest(availability = availability)
+                )
+            }
+
+            //Not used in this case
+            override fun loadFromCache(): LiveData<MenuViewState> {
+                return AbsentLiveData.create()
+            }
+
+            override suspend fun updateLocalDb(cacheObject: MenuItem?) {
+                cacheObject?.let {
+                    menuItemDao.updateMenuItem(cacheObject.uuid, cacheObject.availability)
                 }
             }
 
