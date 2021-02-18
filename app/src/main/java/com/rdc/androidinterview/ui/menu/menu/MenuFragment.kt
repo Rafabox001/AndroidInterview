@@ -7,10 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.RequestManager
 import com.rdc.androidinterview.R
 import com.rdc.androidinterview.models.CategorySection
 import com.rdc.androidinterview.models.MenuItem
+import com.rdc.androidinterview.models.StoreInfo
 import com.rdc.androidinterview.session.SessionManager
 import com.rdc.androidinterview.ui.menu.menu.state.MenuStateEvent
 import com.rdc.androidinterview.util.SpacingItemDecoration
@@ -18,7 +20,8 @@ import kotlinx.android.synthetic.main.fragment_menu.*
 import javax.inject.Inject
 
 class MenuFragment : BaseMenuFragment(),
-    CategoryListAdapter.Interaction {
+    CategoryListAdapter.Interaction,
+    SwipeRefreshLayout.OnRefreshListener {
 
     @Inject
     lateinit var requestManager: RequestManager
@@ -31,6 +34,8 @@ class MenuFragment : BaseMenuFragment(),
     lateinit var sessionManager: SessionManager
     private var initialLoad: Boolean = true
 
+    private var myStoreInfo: StoreInfo? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -41,6 +46,7 @@ class MenuFragment : BaseMenuFragment(),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        swipe_refresh.setOnRefreshListener(this)
 
         initRecyclerView()
         subscribeObservers()
@@ -77,7 +83,8 @@ class MenuFragment : BaseMenuFragment(),
                         if (store.isEmpty().not()) {
                             val storeId = store[0].uuid
                             if (storeId.isEmpty().not().and(initialLoad)) {
-                                viewModel.setStateEvent(MenuStateEvent.SearchMenuItemsEvent(storeId!!))
+                                myStoreInfo = store[0]
+                                viewModel.setStateEvent(MenuStateEvent.SearchMenuItemsEvent(storeId))
                                 initialLoad = false
                             }
                         }
@@ -101,8 +108,9 @@ class MenuFragment : BaseMenuFragment(),
                 }
                 viewState.updatedMenuItem?.let { updatedItem ->
                     currentCategoryList.forEachIndexed { index, categorySection ->
-                        if (categorySection.uuid.contentEquals(updatedItem.category.uuid)){
-                            categorySection.menuItems[updatingPosition].availability = updatedItem.availability
+                        if (categorySection.uuid.contentEquals(updatedItem.category.uuid)) {
+                            categorySection.menuItems[updatingPosition].availability =
+                                updatedItem.availability
                             recyclerAdapter.notifyItemChanged(index, categorySection)
                         }
                     }
@@ -180,5 +188,12 @@ class MenuFragment : BaseMenuFragment(),
     companion object {
         private const val AVAILABLE_STATUS = "AVAILABLE"
         private const val UNAVAILABLE_STATUS = "UNAVAILABLE"
+    }
+
+    override fun onRefresh() {
+        myStoreInfo?.let { store ->
+            viewModel.setStateEvent(MenuStateEvent.SearchMenuItemsEvent(store.uuid))
+        }
+        swipe_refresh.isRefreshing = false
     }
 }
