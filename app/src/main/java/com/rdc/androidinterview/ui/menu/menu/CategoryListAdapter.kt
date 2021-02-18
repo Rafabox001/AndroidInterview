@@ -1,9 +1,11 @@
 package com.rdc.androidinterview.ui.menu.menu
 
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.*
 import com.bumptech.glide.RequestManager
@@ -18,7 +20,7 @@ class CategoryListAdapter(
     private val requestManager: RequestManager
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>(),
-    MenuItemListAdapter.Interaction{
+    MenuItemListAdapter.Interaction {
 
     private val TAG: String = "AppDebug"
 
@@ -30,7 +32,10 @@ class CategoryListAdapter(
             return oldItem.uuid == newItem.uuid
         }
 
-        override fun areContentsTheSame(oldItem: CategorySection, newItem: CategorySection): Boolean {
+        override fun areContentsTheSame(
+            oldItem: CategorySection,
+            newItem: CategorySection
+        ): Boolean {
             return oldItem == newItem
         }
 
@@ -79,14 +84,17 @@ class CategoryListAdapter(
 
         holder.itemView.menu_items_recycler.apply {
             recyclerAdapter = MenuItemListAdapter(this@CategoryListAdapter, requestManager)
-            addOnScrollListener(object: RecyclerView.OnScrollListener(){
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     super.onScrollStateChanged(recyclerView, newState)
                     val layoutManager = recyclerView.layoutManager as LinearLayoutManager
                     val lastPosition = layoutManager.findLastVisibleItemPosition()
                     if (lastPosition == recyclerAdapter.itemCount.minus(1)) {
-                        Log.d(TAG, "Menu Fragment: end of scroll, if pagination should be implemented this is the place...")
+                        Log.d(
+                            TAG,
+                            "Menu Fragment: end of scroll, if pagination should be implemented this is the place..."
+                        )
 //
                     }
                 }
@@ -121,7 +129,29 @@ class CategoryListAdapter(
             }
 
             itemView.category.text = item.name
-            itemView.menu_items_recycler.isVisible = item.itemsVisible
+            itemView.items_quantity.text =
+                itemView.context.getString(R.string.item_quantity, item.menuItems.size.toString())
+            when (item.itemsVisible) {
+                true -> {
+                    itemView.menu_items_recycler.isVisible = true
+                    itemView.items_quantity.setTextColor(
+                        ContextCompat.getColor(
+                            itemView.context,
+                            R.color.tealDark
+                        )
+                    )
+                }
+                false -> {
+                    itemView.menu_items_recycler.isVisible = false
+                    itemView.items_quantity.setTextColor(
+                        ContextCompat.getColor(
+                            itemView.context,
+                            R.color.red2
+                        )
+                    )
+                }
+            }
+
         }
     }
 
