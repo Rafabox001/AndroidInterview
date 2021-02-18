@@ -3,8 +3,10 @@ package com.rdc.androidinterview.repository.auth
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.LiveData
+import com.rdc.androidinterview.api.GenericStatusResponse
 import com.rdc.androidinterview.api.auth.ParrotChallengeApiAuthService
 import com.rdc.androidinterview.api.auth.network_requests.LoginRequest
+import com.rdc.androidinterview.api.auth.network_requests.RefreshRequest
 import com.rdc.androidinterview.api.auth.network_responses.LoginResponse
 import com.rdc.androidinterview.models.AccountProperties
 import com.rdc.androidinterview.models.AuthToken
@@ -24,7 +26,9 @@ import com.rdc.androidinterview.util.ErrorHandling.Companion.ERROR_SAVE_AUTH_TOK
 import com.rdc.androidinterview.util.GenericApiResponse
 import com.rdc.androidinterview.util.PreferenceKeys
 import com.rdc.androidinterview.util.SuccessHandling.Companion.RESPONSE_CHECK_PREVIOUS_AUTH_USER_DONE
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class AuthRepository @Inject constructor(
@@ -197,6 +201,122 @@ class AuthRepository @Inject constructor(
 
             }.asLiveData()
         }
+    }
+
+    fun attemptRefresh(authToken: AuthToken): LiveData<DataState<AuthViewState>>{
+
+        return object: NetworkBoundResource<LoginResponse, Any, AuthViewState>(
+            sessionManager.isConnectedToTheInternet(),
+            true,
+            true,
+            false
+        ){
+            override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<LoginResponse>) {
+                Log.d(TAG, "handleApiSuccessResponse: ${response}")
+
+                // will return -1 if failure
+                val result = authTokenDao.insert(
+                    AuthToken(
+                        account_pk = 1,
+                        access_token = response.body.access_token,
+                        refresh_token = response.body.refresh_token
+                    )
+                )
+                if(result < 0){
+                    return onCompleteJob(DataState.error(
+                        Response(ERROR_SAVE_AUTH_TOKEN, ResponseType.Dialog()))
+                    )
+                }
+
+                onCompleteJob(
+                    DataState.data(
+                        data = AuthViewState(
+                            authToken = AuthToken(
+                                account_pk = 1,
+                                access_token = response.body.access_token,
+                                refresh_token = response.body.refresh_token
+                            )
+                        )
+                    )
+                )
+            }
+
+            override fun createCall(): LiveData<GenericApiResponse<LoginResponse>> {
+                return parrotChallengeApiAuthService.refreshToken(
+                    RefreshRequest(
+                        refresh = authToken.refresh_token!!
+                    )
+                )
+            }
+
+            override fun setJob(job: Job) {
+                addJob("attemptLogin", job)
+            }
+
+            //Not used in this case
+            override suspend fun createCacheRequestAndReturn() {
+
+            }
+
+            //Not used in this case
+            override fun loadFromCache(): LiveData<AuthViewState> {
+                return AbsentLiveData.create()
+            }
+
+            //Not used in this case
+            override suspend fun updateLocalDb(cacheObject: Any?) {
+            }
+
+        }.asLiveData()
+    }
+
+    fun saveAccountProperties(authToken: AuthToken, accountProperties: AccountProperties): LiveData<DataState<AuthViewState>> {
+        return object: NetworkBoundResource<GenericStatusResponse, Any, AuthViewState>(
+            sessionManager.isConnectedToTheInternet(),
+            true,
+            true,
+            false
+        ){
+
+            // not applicable
+            override suspend fun createCacheRequestAndReturn() {
+
+            }
+
+            override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<GenericStatusResponse>) {
+                updateLocalDb(null) // The update does not return a CacheObject
+
+                withContext(Dispatchers.Main){
+                    // finish with success response
+                    onCompleteJob(
+                        DataState.data(
+                            data = null,
+                            response = Response(response.body.status, ResponseType.Toast())
+                        ))
+                }
+            }
+
+            // not used in this case
+            override fun loadFromCache(): LiveData<AuthViewState> {
+                return AbsentLiveData.create()
+            }
+
+            override fun createCall(): LiveData<GenericApiResponse<GenericStatusResponse>> {
+                return parrotChallengeApiAuthService.validateToken(
+                    "Token ${authToken.access_token!!}"
+                )
+            }
+
+            //Ignored in this case
+            override suspend fun updateLocalDb(cacheObject: Any?) {
+
+            }
+
+            override fun setJob(job: Job) {
+                addJob("saveAccountProperties", job)
+            }
+
+        }.asLiveData()
     }
 
     private fun saveAuthenticatedUserToPrefs(username: String){

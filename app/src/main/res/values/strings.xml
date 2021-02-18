@@ -25,6 +25,7 @@
     <string name="product_unavailable">Unavailable</string>
     <string name="product_price">Price: $%s</string>
     <string name="category">Category</string>
+    <string name="item_quantity">(%s)</string>
 
     <!-- Testing purpose strings -->
     <string name="predefined_username">android-challenge@parrotsoftware.io</string>
