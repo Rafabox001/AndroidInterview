@@ -50,6 +50,23 @@ data class MenuItem(
     @ColumnInfo(name = "category") var category: Category
 ) {
 
+    override fun equals(other: Any?): Boolean {
+        if (javaClass != other?.javaClass) return false
+
+        other as MenuItem
+
+        if (uuid != other.uuid) return false
+        if (name != other.name) return false
+        if (description != other.description) return false
+        if (imageUrl != other.imageUrl) return false
+        if (legacyId != other.legacyId) return false
+        if (price != other.price) return false
+        if (availability != other.availability) return false
+        if (category != other.category) return false
+
+        return true
+    }
+
     override fun toString(): String {
         return "MenuItem(uuid=$uuid, " +
                 "name='$name', " +

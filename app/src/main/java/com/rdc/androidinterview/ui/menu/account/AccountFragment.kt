@@ -6,11 +6,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
+import com.bumptech.glide.RequestManager
 import com.rdc.androidinterview.R
 import com.rdc.androidinterview.models.AccountProperties
+import com.rdc.androidinterview.models.MenuItem
 import com.rdc.androidinterview.session.SessionManager
 import com.rdc.androidinterview.ui.menu.account.state.AccountStateEvent
+import com.rdc.androidinterview.ui.menu.menu.MenuItemListAdapter
 import kotlinx.android.synthetic.main.fragment_account.*
+import kotlinx.android.synthetic.main.fragment_menu.*
 import javax.inject.Inject
 
 class AccountFragment : BaseAccountFragment(){
@@ -56,7 +60,7 @@ class AccountFragment : BaseAccountFragment(){
         viewModel.viewState.observe(viewLifecycleOwner, { viewState->
             if(viewState != null){
                 viewState.accountProperties?.let{
-                    Log.d(TAG, "AccountFragment, ViewState: ${it}")
+                    Log.d(TAG, "AccountFragment, ViewState: $it")
                     setAccountDataFields(it)
                 }
             }

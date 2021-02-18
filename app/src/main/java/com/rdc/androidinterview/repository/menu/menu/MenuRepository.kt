@@ -184,12 +184,12 @@ class MenuRepository @Inject constructor(
                     }
                 }
                 else{
-                    Log.d(TAG, "updateLocalDb: blog post list is null")
+                    Log.d(TAG, "updateLocalDb: menu items list is null")
                 }
             }
 
             override fun setJob(job: Job) {
-                addJob("searchBlogPosts", job)
+                addJob("searchMenuItems", job)
             }
 
         }.asLiveData()
